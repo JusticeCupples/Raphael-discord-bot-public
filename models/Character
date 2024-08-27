@@ -1,0 +1,42 @@
+const mongoose = require('mongoose');
+
+const inventoryItemSchema = new mongoose.Schema({
+  item: String,
+  quantity: Number
+}, { _id: false });
+
+const characterSchema = new mongoose.Schema({
+  userId: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  class: { type: String, default: 'Adventurer' },
+  level: { type: Number, default: 1 },
+  experience: { type: Number, default: 0 },
+  health: { type: Number, default: 100 },
+  maxHealth: { type: Number, default: 100 },
+  attack: { type: Number, default: 10 },
+  defense: { type: Number, default: 10 },
+  currency: { type: Number, default: 0 },
+  inventory: [{
+    type: mongoose.Schema.Types.Mixed,
+    validate: {
+      validator: function(v) {
+        return typeof v === 'string' || (v.item && v.quantity);
+      },
+      message: props => `${props.value} is not a valid inventory item!`
+    }
+  }],
+  equippedItems: {
+    weapon: { type: String, default: null },
+    armor: { type: String, default: null },
+    accessory: { type: String, default: null }
+  },
+  skills: [String],
+  currentLayer: { type: Number, default: 1 },
+  guildId: { type: mongoose.Schema.Types.ObjectId, ref: 'Guild', default: null },
+  isDiving: { type: Boolean, default: false },
+  diveEndTime: { type: Date, default: null }
+});
+
+const Character = mongoose.model('Character', characterSchema);
+
+module.exports = Character;

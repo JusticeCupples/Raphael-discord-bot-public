@@ -1,0 +1,3 @@
+const randomlist1 = ["RWBY", "My Hero Academia", "Boko No Pico", "Arcane", "Love is War", "Erased"]
+
+module.exports = randomlist1

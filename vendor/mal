@@ -1,0 +1,61 @@
+const axios = require("axios");
+
+async function fetchMalDetails(animeTitle) {
+  const url = `https://api.jikan.moe/v4/anime?q=${encodeURIComponent(
+    animeTitle
+  )}&limit=1`;
+
+  try {
+    const response = await axios.get(url);
+    const anime = response.data.data[0]; // Get the first result
+    const rating = anime.score ? anime.score : "N/A";
+    const summary = anime.synopsis ? anime.synopsis : "No summary available.";
+    const titleEnglish = anime.title_english ? anime.title_english : "N/A";
+    const titleJapanese = anime.title_japanese ? anime.title_japanese : "N/A";
+    const genres = anime.genres.map((g) => g.name).join(", ");
+    const episodes = anime.episodes ? anime.episodes : "N/A";
+    const duration = anime.duration ? anime.duration : "N/A";
+    const studio = anime.studios.map((s) => s.name).join(", ");
+    const imageUrl = anime.images.jpg.image_url
+      ? anime.images.jpg.image_url
+      : "N/A";
+
+    // Static URLs for demonstration; replace with actual URLs if available
+    const watchLinks = {
+      official: ["https://www.crunchyroll.com/", "https://www.funimation.com/"],
+      unofficial: ["https://9anime.to/", "https://kissanime.ru/"],
+    };
+
+    return {
+      rating,
+      summary,
+      titleEnglish,
+      titleJapanese,
+      genres,
+      episodes,
+      duration,
+      studio,
+      imageUrl,
+      watchLinks,
+    };
+  } catch (error) {
+    console.error("Error fetching MAL details:", error);
+    return {
+      rating: "N/A",
+      summary: "No summary available.",
+      titleEnglish: "N/A",
+      titleJapanese: "N/A",
+      genres: "N/A",
+      episodes: "N/A",
+      duration: "N/A",
+      studio: "N/A",
+      imageUrl: "N/A",
+      watchLinks: {
+        official: ["N/A"],
+        unofficial: ["N/A"],
+      },
+    };
+  }
+}
+
+module.exports = { fetchMalDetails };

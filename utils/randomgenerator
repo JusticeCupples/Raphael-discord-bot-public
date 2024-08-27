@@ -1,0 +1,10 @@
+const randomlist1 = require ('../utils/randomlist1')
+
+function rng1(){
+
+const randomlist = randomlist1;
+
+const randomAnswer = randomlist[Math.floor(Math.random() * randomlist.length)];
+return randomAnswer
+}
+module.exports = rng1
