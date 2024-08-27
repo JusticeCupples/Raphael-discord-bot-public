@@ -15,5 +15,5 @@ node_modules
 .vscode
 
 #secret
-config/secret.js
+secret.js
 .env
