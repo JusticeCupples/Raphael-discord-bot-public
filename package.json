@@ -10,7 +10,7 @@
     "build": "npm install"
   },
   "engines": {
-    "node": "16.x"
+    "node": ">=16.9.0"
   },
   "keywords": [],
   "author": "",
