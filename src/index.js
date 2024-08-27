@@ -12,6 +12,17 @@ const giveUserXp = require('../utils/giveUserXp');
 const { filterBadWords } = require('../utils/badwords');
 const { ping } = require('../utils/ping');
 const { handleButton, handleModalSubmit } = require('../handlers/buttonHandler');
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Discord bot is running!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 const client = new Client({
   intents: [
