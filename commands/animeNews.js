@@ -52,76 +52,82 @@ async function fetchTopAnime() {
 
 async function postAnimeNews(client) {
     console.log('postAnimeNews function called');
-    const guild = client.guilds.cache.first();
-    console.log('Guild:', guild ? guild.name : 'No guild found');
-    const channel = guild.channels.cache.find(ch => ch.name === 'anime-updates');
-    console.log('Channel:', channel ? channel.name : 'No anime-updates channel found');
-    const newsRole = guild.roles.cache.find(role => role.name === 'news');
-    console.log('News role:', newsRole ? newsRole.name : 'No news role found');
+    
+    // Find all guilds with an 'anime-updates' channel
+    const guildsWithAnimeChannel = client.guilds.cache.filter(guild => 
+        guild.channels.cache.some(channel => channel.name === 'anime-updates')
+    );
 
-    if (!channel) {
-        console.error('Anime updates channel not found');
-        return;
-    }
+    for (const guild of guildsWithAnimeChannel.values()) {
+        const channel = guild.channels.cache.find(ch => ch.name === 'anime-updates');
+        console.log(`Found anime-updates channel in guild: ${guild.name}`);
+        
+        const newsRole = guild.roles.cache.find(role => role.name === 'news');
+        
+        if (!channel) {
+            console.error(`Anime updates channel not found in guild: ${guild.name}`);
+            continue;
+        }
 
-    console.log('Sending initial message');
-    await channel.send(`${newsRole ? newsRole.toString() : '@everyone'} Good morning degenerates! Here's what's new in the world of anime!`);
+        console.log('Sending initial message');
+        await channel.send(`${newsRole ? newsRole.toString() : '@animeNews'} Good morning degenerates! Here's what's new in the world of anime!`);
 
-    console.log('Generating fake news');
-    const newsItems = generateFakeAnimeNews();
-    for (const item of newsItems) {
-        console.log('Sending news item:', item.substring(0, 50) + '...');
-        await channel.send(item);
-    }
+        console.log('Generating fake news');
+        const newsItems = generateFakeAnimeNews();
+        for (const item of newsItems) {
+            console.log('Sending news item:', item.substring(0, 50) + '...');
+            await channel.send(item);
+        }
 
-    // Weekly top anime update
-    const today = new Date();
-    if (today.getDay() === 0) { // Sunday
-        console.log('It\'s Sunday, fetching top anime');
-        const topAnime = await fetchTopAnime();
-        if (topAnime.length > 0) {
-            console.log('Creating top anime embed');
-            const topAnimeEmbed = new EmbedBuilder()
-                .setColor('#0099ff')
-                .setTitle('Top Anime of the Week!')
-                .setDescription('Here are the current top 10 anime according to MyAnimeList:')
-                .setTimestamp();
+        // Weekly top anime update
+        const today = new Date();
+        if (today.getDay() === 0) { // Sunday
+            console.log('It\'s Sunday, fetching top anime');
+            const topAnime = await fetchTopAnime();
+            if (topAnime.length > 0) {
+                console.log('Creating top anime embed');
+                const topAnimeEmbed = new EmbedBuilder()
+                    .setColor('#0099ff')
+                    .setTitle('Top Anime of the Week!')
+                    .setDescription('Here are the current top 10 anime according to MyAnimeList:')
+                    .setTimestamp();
 
-            topAnime.forEach((anime, index) => {
-                topAnimeEmbed.addFields({ 
-                    name: `${index + 1}. ${anime.title}`, 
-                    value: `Rating: ${anime.score} | Episodes: ${anime.episodes || 'N/A'}\n[More info](${anime.url})`
+                topAnime.forEach((anime, index) => {
+                    topAnimeEmbed.addFields({ 
+                        name: `${index + 1}. ${anime.title}`, 
+                        value: `Rating: ${anime.score} | Episodes: ${anime.episodes || 'N/A'}\n[More info](${anime.url})`
+                    });
                 });
-            });
 
-            console.log('Sending top anime embed');
-            await channel.send({ content: "Here is the top anime of the week!", embeds: [topAnimeEmbed] });
+                console.log('Sending top anime embed');
+                await channel.send({ content: "Here is the top anime of the week!", embeds: [topAnimeEmbed] });
+            }
         }
     }
     console.log('postAnimeNews function completed');
 }
 
 const forceUpdateCommand = {
-  data: new SlashCommandBuilder()
-    .setName('force-anime-news')
-    .setDescription('Force an anime news update (Admin only)'),
-  execute: async function(interaction) {
-    console.log('Force anime news command triggered');
-    if (!ADMIN_IDS.includes(interaction.user.id)) {
-      console.log('User not authorized:', interaction.user.id);
-      return interaction.reply({ content: 'This command is for administrators only.', ephemeral: true });
-    }
+    data: new SlashCommandBuilder()
+        .setName('force-anime-news')
+        .setDescription('Force an anime news update (Admin only)'),
+    execute: async function(interaction) {
+        console.log('Force anime news command triggered');
+        if (!ADMIN_IDS.includes(interaction.user.id)) {
+            console.log('User not authorized:', interaction.user.id);
+            return interaction.reply({ content: 'This command is for administrators only.', ephemeral: true });
+        }
 
-    console.log('User authorized, deferring reply');
-    await interaction.deferReply();
-    
-    console.log('Calling postAnimeNews');
-    await postAnimeNews(interaction.client);
-    
-    console.log('Anime news posted, editing reply');
-    await interaction.editReply('Anime news update has been forced.');
-    console.log('Force anime news command completed');
-  }
+        console.log('User authorized, deferring reply');
+        await interaction.deferReply();
+        
+        console.log('Calling postAnimeNews');
+        await postAnimeNews(interaction.client);
+        
+        console.log('Anime news posted, editing reply');
+        await interaction.editReply('Anime news update has been forced.');
+        console.log('Force anime news command completed');
+    }
 };
 
 module.exports = { postAnimeNews, forceUpdateCommand };
